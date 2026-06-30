@@ -12,3 +12,14 @@ __pycache__/
 
 # VS Code local-only settings
 .vscode/*.local.json
+
+# Terraform temporary files and state
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+
+# Terraform variable files can contain secrets later
+*.tfvars
+*.tfvars.json
