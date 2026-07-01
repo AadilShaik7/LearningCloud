@@ -23,3 +23,7 @@ crash.*.log
 # Terraform variable files can contain secrets later
 *.tfvars
 *.tfvars.json
+
+
+# Pytest cache
+.pytest_cache/

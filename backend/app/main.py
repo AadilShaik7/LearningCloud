@@ -11,7 +11,7 @@ temp_db: dict[int, TaskResponse] = {}
 next_id = 0
 
 
-@app.get("/health")
+@app.get("/health",status_code=status.HTTP_200_OK)
 def health_check() -> dict[str, str]:
     return {
         "status": "ok",
