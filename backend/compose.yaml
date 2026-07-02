@@ -1,0 +1,23 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      MONGODB_URL: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongo:27017/?authSource=admin
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:8.0
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: learning_cloud
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

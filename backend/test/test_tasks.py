@@ -1,5 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
+from bson import ObjectId
 
 
 def test_create_task(client: TestClient):
@@ -12,7 +13,7 @@ def test_create_task(client: TestClient):
 
     body = response.json()
 
-    assert body["id"] == 1
+    assert isinstance(body["id"], str)
     assert body["title"] == "Learn automated testing"
     assert body["completed"] is False
 
@@ -28,11 +29,11 @@ def test_list_tasks(client: TestClient):
     body = response.json()
 
     assert len(body) == 2
-    assert body[0]["id"] == 1
+    assert isinstance(body[0]["id"], str)
     assert body[0]["title"] == "Learn FastAPI"
     assert body[0]["completed"] is False
 
-    assert body[1]["id"] == 2
+    assert isinstance(body[1]["id"], str)
     assert body[1]["title"] == "Learn Docker"
     assert body[1]["completed"] is False
 
@@ -43,14 +44,15 @@ def test_get_task_by_id(client: TestClient):
         json={"title": "Learn path parameters"},
     ).json()
 
-    response = client.get(f"/tasks/{created_task['id']}")
+    created_task_id = created_task["id"]
+    response = client.get(f"/tasks/{created_task_id}")
 
     assert response.status_code == 200
     assert response.json() == created_task
 
 
 def test_get_missing_task_returns_404(client: TestClient):
-    response = client.get("/tasks/999")
+    response = client.get("/tasks/abc123")
 
     assert response.status_code == 404
 
@@ -69,7 +71,7 @@ def test_complete_task(client: TestClient):
 
     body = response.json()
 
-    assert body["id"] == created_task["id"]
+    assert isinstance(body["id"], str)
     assert body["title"] == "Finish Day 5"
     assert body["completed"] is True
 

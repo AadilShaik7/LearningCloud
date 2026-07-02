@@ -25,8 +25,8 @@ def get_all_tasks() -> list[TaskResponse]:
     return task_service.list_tasks()
 
 
-@router.get("/tasks/{task_id}", response_model=TaskResponse)
-def get_task_by_id(task_id: int) -> TaskResponse:
+@router.get("/tasks/{task_id}", response_model=TaskResponse, status_code=status.HTTP_200_OK)
+def get_task_by_id(task_id: str) -> TaskResponse:
     task = task_service.get_task(task_id)
 
     if task is None:
@@ -42,7 +42,7 @@ def get_task_by_id(task_id: int) -> TaskResponse:
     "/tasks/{task_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-def delete_task(task_id: int) -> None:
+def delete_task(task_id: str) -> None:
     if not task_service.delete_task(task_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -55,8 +55,9 @@ def delete_task(task_id: int) -> None:
 @router.patch(
     "/tasks/{task_id}/complete",
     response_model=TaskResponse,
+    status_code=status.HTTP_200_OK,
 )
-def complete_task(task_id: int) -> TaskResponse:
+def complete_task(task_id: str) -> TaskResponse:
     task = task_service.get_task(task_id)
 
     if task is None:
@@ -64,6 +65,5 @@ def complete_task(task_id: int) -> TaskResponse:
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found",
         )
-
-    task.completed = True
+    task = task_service.complete_task(task_id)
     return task

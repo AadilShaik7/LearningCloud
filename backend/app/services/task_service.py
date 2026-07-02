@@ -1,51 +1,73 @@
+from pymongo import ReturnDocument
+
 from app.schemas.task import TaskCreate, TaskResponse
+from app.database import tasks_collection
+from bson import ObjectId
 
-temp_db: dict[int, TaskResponse] = {}
-next_task_id = 1
 
+def sanitize_object_id(id: str) -> str | None:
+    if not ObjectId.is_valid(id):
+        return None
+    return ObjectId(id)
 
 def create_task(task_create: TaskCreate) -> TaskResponse:
-    global next_task_id
+
+    task_document = {
+    "title": task_create.title,
+    "completed": False,
+}
+    
+    insert_result = tasks_collection.insert_one(task_document)
 
     task_response = TaskResponse(
-        id=next_task_id,
-        title=task_create.title,
-        completed=False,
+        id = str(insert_result.inserted_id),
+        title = task_document["title"],
+        completed = task_document["completed"],
     )
-
-    temp_db[task_response.id] = task_response
-    next_task_id += 1
 
     return task_response
 
 
 def list_tasks() -> list[TaskResponse]:
-    return list(temp_db.values())
+    task_documents = tasks_collection.find({})
+    return [TaskResponse(id=str(task["_id"]), title=task["title"], completed=task["completed"]) for task in task_documents]
 
 
-def get_task(task_id: int) -> TaskResponse | None:
-    return temp_db.get(task_id)
+def get_task(task_id: str) -> TaskResponse | None:
+    object_id = sanitize_object_id(task_id)
+    if object_id is None:
+        return None
+    task_document = tasks_collection.find_one({"_id": object_id})
+    if not task_document:
+        return None
+    return TaskResponse(id=str(task_document["_id"]), title=task_document["title"], completed=task_document["completed"])
 
 
-def complete_task(task_id: int) -> TaskResponse | None:
-    task = temp_db.get(task_id)
+def complete_task(task_id: str) -> TaskResponse | None:
+    object_id = sanitize_object_id(task_id)
 
-    if task is None:
+    if object_id is None:
         return None
 
-    completed_task = task.model_copy(
-        update={"completed": True},
+    task_document = tasks_collection.find_one_and_update(
+        {"_id": object_id},
+        {"$set": {"completed": True}},
+        return_document=ReturnDocument.AFTER,
+    )
+    
+    if task_document is None:
+        return None
+    
+    return TaskResponse(
+        id=str(task_document["_id"]),
+        title=task_document["title"],
+        completed=task_document["completed"],
     )
 
-    temp_db[task_id] = completed_task
 
-    return completed_task
-
-
-def delete_task(task_id: int) -> bool:
-    if task_id not in temp_db:
+def delete_task(task_id: str) -> bool:
+    object_id = sanitize_object_id(task_id)
+    if object_id is None:
         return False
-
-    del temp_db[task_id]
-
-    return True
+    task_document = tasks_collection.find_one_and_delete({"_id": object_id})
+    return task_document is not None

@@ -1,13 +1,12 @@
 import pytest
 from fastapi.testclient import TestClient
-
+from app.database import tasks_collection
 from app.services import task_service
 from app.main import app
 
 @pytest.fixture(autouse=True)
 def reset_data():
-    task_service.temp_db.clear()
-    task_service.next_task_id = 1
+    tasks_collection.delete_many({})
 
 @pytest.fixture()
 def client():

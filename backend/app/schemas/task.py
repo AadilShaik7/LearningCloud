@@ -20,6 +20,6 @@ class TaskCreate(BaseModel):
 
 
 class TaskResponse(BaseModel):
-    id: int
+    id: str
     title: str
     completed: bool
