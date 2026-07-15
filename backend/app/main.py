@@ -12,6 +12,7 @@ def health_check() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "learningcloud-api",
+        "version": "0.1.0",
     }
 
 
